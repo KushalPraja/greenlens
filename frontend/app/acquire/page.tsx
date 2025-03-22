@@ -1,16 +1,86 @@
-"use client"
-import { useState, useRef } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, Camera, Image as ImageIcon, Loader2, Info, AlertCircle, Leaf, Trash, RefreshCw, Search, MapPin, Recycle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ImageService from "@/lib/image"
-import AuthService from "@/lib/auth"
+"use client";
+
+import * as React from "react";
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Upload, Camera, Image as ImageIcon, Loader2, Info, AlertCircle, Leaf, Trash, RefreshCw, Search, MapPin, Recycle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ImageService from "@/lib/image";
+import AuthService from "@/lib/auth";
+
+// TypeScript interfaces for type safety
+interface Product {
+  name: string;
+  description: string;
+  whereToBuy: string;
+  price: string;
+  environmentalBenefits: string;
+}
+
+interface SearchResults {
+  products: Product[];
+}
+
+// Utility function to safely parse JSON outside of render
+const parseSustainableProducts = (response: { data: { products: { map: (arg0: (product: any) => { name: any; description: any; whereToBuy: any; price: any; environmentalBenefits: any; }) => any; rawResponse: string; }; }; }) => {
+  // First, handle direct products array if it exists
+  if (response?.data?.products && Array.isArray(response.data.products)) {
+    return {
+      products: response.data.products.map((product) => ({
+        name: product.name || "Product",
+        description: product.description || "",
+        whereToBuy: Array.isArray(product.whereToBuy) ? product.whereToBuy.join(", ") : product.whereToBuy || "",
+        price: product.price || "",
+        environmentalBenefits: Array.isArray(product.environmentalBenefits) ? product.environmentalBenefits.join(". ") : product.environmentalBenefits || ""
+      }))
+    };
+  }
+  
+  // Then try to extract from raw response
+  if (response?.data?.products?.rawResponse) {
+    try {
+      // Try parsing the entire rawResponse directly first
+      let parsedData;
+      try {
+        parsedData = JSON.parse(response.data.products.rawResponse);
+      } catch {
+        // If that fails, try extracting JSON from within code blocks
+        const rawJson = response.data.products.rawResponse.trim();
+        const jsonStart = rawJson.indexOf('{');
+        const jsonEnd = rawJson.lastIndexOf('}') + 1;
+        
+        if (jsonStart === -1 || jsonEnd === -1) return { products: [] };
+        
+        const jsonContent = rawJson.substring(jsonStart, jsonEnd);
+        parsedData = JSON.parse(jsonContent);
+      }
+      
+      if (!parsedData?.products) return { products: [] };
+      
+      return {
+        products: parsedData.products.map((product:any) => ({
+          name: product.name || "Product",
+          description: product.description || "",
+          whereToBuy: Array.isArray(product.whereToBuy) ? product.whereToBuy.join(", ") : product.whereToBuy || "",
+          price: product.price || "",
+          environmentalBenefits: Array.isArray(product.environmentalBenefits) ? product.environmentalBenefits.join(". ") : product.environmentalBenefits || ""
+        }))
+      };
+    } catch (error) {
+      console.error("Error parsing product data:", error);
+      return { products: [] };
+    }
+  }
+  
+  // Default return empty products array
+  return { products: [] };
+};
 
 export default function AcquirePage() {
   const router = useRouter()
@@ -29,6 +99,7 @@ export default function AcquirePage() {
   const [searchResults, setSearchResults] = useState<any | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   
+
   // Added reflection step state
   const [showReflection, setShowReflection] = useState(false)
   const [needsProduct, setNeedsProduct] = useState(false)
@@ -36,6 +107,24 @@ export default function AcquirePage() {
   const [reflectionComplete, setReflectionComplete] = useState(false)
   const [analyzedItem, setAnalyzedItem] = useState<string>("")
   
+  // Add this new state to store raw response data
+  const [rawResponse, setRawResponse] = useState<any>(null);
+  
+  // Process the raw response when it changes
+  useEffect(() => {
+    if (rawResponse) {
+      const parsedResults = parseSustainableProducts(rawResponse);
+      if (parsedResults) {
+        setSearchResults(parsedResults);
+      } else {
+        // If parsing fails, at least ensure we have a valid products array
+        setSearchResults({
+          products: []
+        });
+      }
+    }
+  }, [rawResponse]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -240,19 +329,24 @@ export default function AcquirePage() {
     
     setIsSearching(true)
     setSearchError(null)
+    // Don't clear search results yet to avoid hydration error
     
     try {
       const searchData = {
         query: searchQuery.trim(),
-        location: location.trim() || undefined,
+        location: location.trim() || "nearby stores",
         category: 'sustainable'
       }
       
       const response = await ImageService.findLocalProducts(searchData)
-      setSearchResults(response)
+      
+      // Store the raw response - processing will happen in useEffect
+      setRawResponse(response);
     } catch (err) {
       console.error("Error searching for products:", err)
       setSearchError("Failed to search for products. Please try again.")
+      // Ensure search results is at least an empty array
+      setSearchResults({ products: [] });
     } finally {
       setIsSearching(false)
     }
@@ -273,9 +367,11 @@ export default function AcquirePage() {
     }
   }
   
+  // Modify reset function to clear raw response too
   const resetSearchForm = () => {
     setSearchQuery("")
     setLocation("")
+    setRawResponse(null);
     setSearchResults(null)
     setSearchError(null)
   }
@@ -733,33 +829,33 @@ export default function AcquirePage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-6">
-                        {searchResults?.products?.map((product: any, index: any) => (
-                          <div key={index} className="rounded-lg border p-4">
-                        <div className="mb-2 flex items-start justify-between">
-                          <h3 className="text-lg font-medium text-green-800">{product.name}</h3>
-                          <Badge variant="outline" className="bg-gray-50">
-                            {product.price}
-                          </Badge>
+                        {searchResults?.products && Array.isArray(searchResults.products) ? (
+                          searchResults.products.map((product:any, index:any) => (
+                            <div key={index} className="rounded-lg border p-4">
+                              <div className="mb-2 flex items-start justify-between">
+                                <h3 className="text-lg font-medium text-green-800">{product.name}</h3>
+                                <Badge variant="outline" className="bg-gray-50">
+                                  {product.price}
+                                </Badge>
+                              </div>
+                              <p className="mb-2 text-sm text-gray-600">{product.description}</p>
+                              
+                              {product.whereToBuy && (
+                                <div className="mb-3 flex items-center gap-1 text-xs text-gray-500">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>{product.whereToBuy}</span>
+                                </div>
+                              )}
+                              
+                              {product.environmentalBenefits && (
+                                <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                                  <h4 className="mb-1 font-medium">Environmental Benefits</h4>
+                                  <p>{product.environmentalBenefits}</p>
+                                </div>
+                              )}
                             </div>
-                            <p className="mb-2 text-sm text-gray-600">{product.description}</p>
-                            
-                            {product.whereToBuy && (
-                              <div className="mb-3 flex items-center gap-1 text-xs text-gray-500">
-                                <MapPin className="h-3 w-3" />
-                                <span>{product.whereToBuy}</span>
-                              </div>
-                            )}
-                            
-                            {product.environmentalBenefits && (
-                              <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                                <h4 className="mb-1 font-medium">Environmental Benefits</h4>
-                                <p>{product.environmentalBenefits}</p>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {(!searchResults?.products || searchResults.products.length === 0) && (
+                          ))
+                        ) : (
                           <div className="rounded-lg border p-6 text-center">
                             <Search className="mx-auto mb-3 h-10 w-10 text-gray-200" />
                             <h3 className="mb-2 text-lg font-medium text-gray-600">No products found</h3>

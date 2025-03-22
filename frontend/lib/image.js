@@ -44,13 +44,17 @@ const ImageService = {
   // Find eco-friendly products based on location and query
   findLocalProducts: async (searchData) => {
     try {
-      const response = await apiClient.post('/image/find-products', searchData);
+      const response = await apiClient.post('/image/find-products', searchData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (!response.data || !response.data.success) {
         throw new Error(response.data?.detail || 'Failed to find products');
       }
       
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error('Product search error:', error);
       throw error.response?.data || { detail: error.message };
