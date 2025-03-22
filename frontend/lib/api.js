@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = 'https://green.wittyhill-45f93eb6.canadaeast.azurecontainerapps.io/';
 
 // Create axios instance with default config
 const apiClient = axios.create({
