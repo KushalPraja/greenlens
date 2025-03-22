@@ -1,5 +1,7 @@
+/* Import existing globals first */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./global-styles.css"; /* Import our new custom scrollbar styles */
 
 @custom-variant dark (&:is(.dark *));
 

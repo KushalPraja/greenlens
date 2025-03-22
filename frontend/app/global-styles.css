@@ -1,0 +1,40 @@
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f0fdf4; /* Light green background */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #22c55e; /* Green-500 */
+  border-radius: 20px;
+  border: 3px solid #f0fdf4;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #16a34a; /* Green-600 */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #22c55e #f0fdf4;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Styling for scroll-to-top button animation */
+#scroll-to-top {
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease, background-color 0.2s ease;
+}
+
+#scroll-to-top:hover {
+  background-color: #15803d; /* Green-700 */
+}

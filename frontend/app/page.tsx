@@ -4,34 +4,49 @@ import Image from "next/image"
 import { ArrowRight, Recycle, RefreshCw, MapPin, Users, Trophy, BookOpen, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import AuthService from "@/lib/auth"
+import { useEffect } from "react"
 
 export default function Home() {
   const isLoggedIn = AuthService.isLoggedIn()
 
+  // Add smooth scroll behavior when component mounts
+  useEffect(() => {
+    // Apply custom scrollbar styles
+    document.documentElement.classList.add('custom-scrollbar');
+    
+    return () => {
+      // Clean up when component unmounts
+      document.documentElement.classList.remove('custom-scrollbar');
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 backdrop-blur-sm bg-white/80 border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-2">
-            <Recycle className="h-6 w-6 text-green-600" />
-            <span className="text-xl font-bold text-green-800">GreenLens</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {isLoggedIn ? (
-              <Button asChild className="bg-green-600 hover:bg-green-700">
-                <Link href="/profile">Profile</Link>
-              </Button>
-            ) : (
-              <>
-                <Button asChild variant="outline">
-                  <Link href="/auth/login">Sign In</Link>
-                </Button>
-                <Button asChild className="bg-green-600 hover:bg-green-700">
-                  <Link href="/auth/register">Get Started</Link>
-                </Button>
-              </>
-            )}
-          </div>
+          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+        <Recycle className="h-6 w-6 text-green-600" />
+        <span className="text-xl font-semibold text-green-800">GreenLens</span>
+          </Link>
+          <nav className="flex items-center gap-4">
+        {isLoggedIn ? (
+          <Button asChild variant="ghost" className="hover:bg-green-50  bg-green-400">
+            <Link href="/profile" className="flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          Profile 
+            </Link>
+          </Button>
+        ) : (
+          <>
+            <Button asChild variant="ghost" className="hover:bg-green-50">
+          <Link href="/auth/login">Sign In</Link>
+            </Button>
+            <Button asChild className="bg-green-600 hover:bg-green-700 shadow-sm">
+          <Link href="/auth/register">Get Started</Link>
+            </Button>
+          </>
+        )}
+          </nav>
         </div>
       </header>
       <main className="flex-1">
@@ -76,21 +91,24 @@ export default function Home() {
           </div>
           <div className="container mx-auto relative z-10 mt-16 px-4 md:px-6">
             <div className="mx-auto flex max-w-5xl justify-center">
-              <div className="relative h-[300px] w-full overflow-hidden rounded-xl shadow-xl sm:h-[400px] md:h-[500px]">
-                <Image
-                  src="/placeholder.svg?height=500&width=1000"
-                  alt="GreenLens in action"
-                  fill
-                  className="object-cover"
+                <div className="relative h-[300px] w-full overflow-hidden rounded-xl shadow-xl sm:h-[400px] md:h-[500px]">
+                <video 
+                  src="/krix.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  style={{ scale: "1.5" }}
+                  playsInline
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 p-6">
                   <div className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-green-800 backdrop-blur-sm">
-                    <Sparkles className="h-4 w-4 text-green-600" />
-                    Powered by AI to identify and suggest sustainable options
+                  <Sparkles className="h-4 w-4 text-green-600" />
+                  Powered by AI to identify and suggest sustainable options
                   </div>
                 </div>
-              </div>
+                </div>
             </div>
           </div>
         </section>
@@ -266,6 +284,11 @@ export default function Home() {
             </div>
           </div>
         </section>
+        
+        {/* Scroll indicator */}
+        <div className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-green-600/80 opacity-0 shadow-lg transition-opacity duration-300 hover:bg-green-700" id="scroll-to-top">
+          <ArrowRight className="h-5 w-5 rotate-[-90deg] text-white" />
+        </div>
       </main>
       <footer className="border-t bg-white py-8">
         <div className="container mx-auto px-4 md:px-6">
@@ -280,6 +303,32 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Add scroll behavior script */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            document.addEventListener('DOMContentLoaded', function() {
+              const scrollToTop = document.getElementById('scroll-to-top');
+              
+              window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                  scrollToTop.style.opacity = '1';
+                } else {
+                  scrollToTop.style.opacity = '0';
+                }
+              });
+              
+              scrollToTop.addEventListener('click', function() {
+                window.scrollTo({
+                  top: 0,
+                  behavior: 'smooth'
+                });
+              });
+            });
+          `,
+        }}
+      />
     </div>
   )
 }
