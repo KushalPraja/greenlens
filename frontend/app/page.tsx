@@ -8,7 +8,7 @@ import { useEffect } from "react"
 
 export default function Home() {
   const isLoggedIn = AuthService.isLoggedIn()
-
+  
   // Add smooth scroll behavior when component mounts
   useEffect(() => {
     // Apply custom scrollbar styles
@@ -173,6 +173,23 @@ export default function Home() {
                 </Link>
                 <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-green-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
               </div>
+              <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <Trophy className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="mb-2 text-xl font-bold text-green-800">Take Action</h3>
+                <p className="mb-4 text-muted-foreground">
+                  Complete eco-friendly challenges, earn points, and make a real impact on the environment.
+                </p>
+                <Link
+                  href="/contribute"
+                  className="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-800"
+                >
+                  Start Contributing
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+                <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-green-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -213,9 +230,9 @@ export default function Home() {
                       <Trophy className="h-3 w-3 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-green-800">Gamification</h3>
+                      <h3 className="font-semibold text-green-800">Environmental Quests</h3>
                       <p className="text-sm text-gray-600">
-                        Earn points and badges for your sustainable actions and contributions.
+                        Complete eco-friendly challenges and track your real environmental impact.
                       </p>
                     </div>
                   </li>
@@ -269,15 +286,14 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button asChild size="lg" className="bg-green-600 hover:bg-green-700">
-                  <Link href="/get-started">
+                  <Link href="/contribute">
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link href="/learn">
-                    Learn More
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <Link href="/community">
+                    View Community
                   </Link>
                 </Button>
               </div>

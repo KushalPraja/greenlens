@@ -8,8 +8,13 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 import os
 
-# Import error handlers
-from app.utils.error_handlers import http_error_handler, validation_error_handler
+# Import error handlers and MongoDB serialization utilities
+from app.utils.error_handlers import (
+    http_error_handler,
+    validation_error_handler,
+    MongoJSONEncoder,
+    serialize_mongodb_doc
+)
 from pydantic import ValidationError
 
 # Load environment variables
@@ -24,7 +29,19 @@ async def lifespan(app: FastAPI):
     # Shutdown: Close MongoDB connection
     app.mongodb_client.close()
 
-app = FastAPI(title="GreenLens API", lifespan=lifespan)
+# Custom response class for MongoDB documents
+class MongoJSONResponse(JSONResponse):
+    def render(self, content) -> bytes:
+        if isinstance(content, dict):
+            # Apply MongoDB document serialization
+            content = serialize_mongodb_doc(content)
+        return super().render(content)
+
+app = FastAPI(
+    title="GreenLens API",
+    lifespan=lifespan,
+    default_response_class=MongoJSONResponse  # Use our custom response class by default
+)
 
 # CORS configuration
 app.add_middleware(
@@ -61,7 +78,8 @@ from app.routers import (
     sustainable_actions,
     points,
     leaderboard,
-    image_processing
+    image_processing,
+    quests
 )
 
 # Include all routers with their prefixes
@@ -71,6 +89,7 @@ app.include_router(sustainable_actions.router, prefix="/api/actions", tags=["Sus
 app.include_router(points.router, prefix="/api/points", tags=["Points"])
 app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["Leaderboard"])
 app.include_router(image_processing.router, prefix="/api/image", tags=["Image Processing"])
+app.include_router(quests.router, prefix="/api/quests", tags=["Quests"])
 
 # Apply middleware to all routes
 @app.middleware("http")
@@ -79,6 +98,25 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = (datetime.now() - start_time).total_seconds()
     response.headers["X-Process-Time"] = str(process_time)
+    return response
+
+# Apply MongoDB serialization middleware
+@app.middleware("http")
+async def mongodb_serialization_middleware(request: Request, call_next):
+    response = await call_next(request)
+    
+    # Only process JSON responses
+    if response.headers.get("content-type") == "application/json":
+        try:
+            body = response.body
+            if body:
+                # Convert response body to dict and apply MongoDB serialization
+                content = serialize_mongodb_doc(response.body_iterator)
+                return MongoJSONResponse(content=content)
+        except:
+            # If any error occurs during serialization, return original response
+            pass
+    
     return response
 
 if __name__ == "__main__":

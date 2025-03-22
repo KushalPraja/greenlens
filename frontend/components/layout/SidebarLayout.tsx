@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
-import { Users, BookOpen, User, LogOut, Trash2, ShoppingBag } from "lucide-react"
+import { Users, Trophy, User, LogOut, Trash2, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import AuthService from "@/lib/auth"
@@ -35,7 +35,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
     { name: 'Community', href: '/community', icon: Users },
     { name: 'Get Rid', href: '/get-rid', icon: Trash2 },
     { name: 'Acquire', href: '/acquire', icon: ShoppingBag },
-    { name: 'Learn', href: '/learn', icon: BookOpen },
+    { name: 'Contribute', href: '/contribute', icon: Trophy },
     { name: 'My Profile', href: '/profile', icon: User },
   ]
 

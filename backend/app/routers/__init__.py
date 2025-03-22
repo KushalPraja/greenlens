@@ -1,4 +1,4 @@
-from . import auth, users, sustainable_actions, points, leaderboard, image_processing
+from . import auth, users, sustainable_actions, points, leaderboard, image_processing, quests
 
 __all__ = [
     "auth",
@@ -6,5 +6,6 @@ __all__ = [
     "sustainable_actions",
     "points",
     "leaderboard",
-    "image_processing"
+    "image_processing",
+    "quests"
 ]
