@@ -21,6 +21,26 @@ const ImageService = {
     }
   },
 
+  // Identify what's in an image
+  identifyImage: async (formData) => {
+    try {
+      const response = await apiClient.post('/image/identify', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.detail || 'Failed to identify image');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Image identification error:', error);
+      throw error.response?.data || { detail: error.message };
+    }
+  },
+
   // Find eco-friendly products based on location and query
   findLocalProducts: async (searchData) => {
     try {

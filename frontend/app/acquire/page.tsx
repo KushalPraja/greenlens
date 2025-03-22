@@ -29,6 +29,13 @@ export default function AcquirePage() {
   const [searchResults, setSearchResults] = useState<any | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
   
+  // Added reflection step state
+  const [showReflection, setShowReflection] = useState(false)
+  const [needsProduct, setNeedsProduct] = useState(false)
+  const [needsNewItem, setNeedsNewItem] = useState(false)
+  const [reflectionComplete, setReflectionComplete] = useState(false)
+  const [analyzedItem, setAnalyzedItem] = useState<string>("")
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -113,21 +120,109 @@ export default function AcquirePage() {
       return;
     }
     
-    setIsAnalyzing(true);
-    setError(null);
+    // Set show reflection flag instead of immediately analyzing
+    setShowReflection(true);
     
+    // Try to identify what's in the image to provide context
     try {
       const formData = new FormData();
-      formData.append('file', selectedImage, selectedImage.name);  // Add filename
-      formData.append('context', 'acquire');
+      formData.append('file', selectedImage, selectedImage.name);
+      formData.append('context', 'identify');
       
-      const response = await ImageService.analyzeImage(formData);
-      setResults(response);  // Use direct response since ImageService now handles data extraction
-    } catch (err: any) {
-      console.error("Error analyzing image:", err);
-      setError(err.detail || "Failed to analyze image. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
+      const response = await ImageService.identifyImage(formData);
+      if (response && response.itemName) {
+        setAnalyzedItem(response.itemName);
+      }
+    } catch (err) {
+      console.error("Error identifying image:", err);
+      // If we can't identify, it's OK - we'll proceed with reflection anyway
+      setAnalyzedItem("this product");
+    }
+  }
+  
+  const handleReflectionComplete = async () => {
+    if (needsProduct && needsNewItem) {
+      // User confirmed they need this product and it needs to be new
+      setReflectionComplete(true);
+      setIsAnalyzing(true);
+      setError(null);
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedImage!, selectedImage!.name);  // Add filename
+        formData.append('context', 'acquire');
+        
+        const response = await ImageService.analyzeImage(formData);
+        
+        // Handle the response properly - parse the JSON from the description if needed
+        let processedResponse = { ...response };
+        
+        if (response.disposalOptions && response.disposalOptions.length > 0) {
+          try {
+            // Check if response contains nested JSON in the description field
+            const descriptionText = response.disposalOptions[0].description;
+            if (descriptionText && descriptionText.includes('```json')) {
+              // Extract the JSON string from the markdown code block
+              const jsonMatch = descriptionText.match(/```json\n([\s\S]*?)```/);
+              if (jsonMatch && jsonMatch[1]) {
+                // Parse the JSON string into objects
+                const parsedItems = JSON.parse(jsonMatch[1]);
+                
+                // Transform the data into the expected format for the frontend
+                processedResponse = {
+                  itemName: response.itemName || "Analyzed Item",
+                  itemDescription: response.itemDescription || "Analysis complete",
+                  suggestions: parsedItems.map((item: any) => ({
+                    name: item.itemName,
+                    description: item.itemDescription,
+                    environmentalBenefits: item.disposalOptions ? 
+                      item.disposalOptions.map((opt: any) => `${opt.method}: ${opt.description}`).join('\n\n') : 
+                      "No specific environmental benefits information available."
+                  }))
+                };
+              }
+            }
+          } catch (parseError) {
+            console.error("Error parsing response JSON:", parseError);
+            // If parsing fails, still show something to the user
+            processedResponse = {
+              itemName: "Analysis Result",
+              itemDescription: "We found some eco-friendly alternatives",
+              suggestions: [{
+                name: "Eco-friendly Alternative",
+                description: "Please see the details below",
+                environmentalBenefits: response.disposalOptions[0].description
+              }]
+            };
+          }
+        }
+        
+        setResults(processedResponse);
+      } catch (err: any) {
+        console.error("Error analyzing image:", err);
+        setError(err.detail || "Failed to analyze image. Please try again.");
+      } finally {
+        setIsAnalyzing(false);
+      }
+    } else {
+      // User decided they don't need this product or it doesn't need to be new
+      // Show alternative suggestions based on their choices
+      setReflectionComplete(true);
+      setResults({
+        itemName: "Sustainable Decision",
+        itemDescription: !needsProduct ? 
+          "You've made a sustainable choice by reconsidering your purchase." : 
+          "You've made a sustainable choice by considering second-hand options.",
+        suggestions: [{
+          name: !needsProduct ? "Reduce Consumption" : "Reuse Options",
+          description: !needsProduct ? 
+            "By choosing not to purchase unnecessary items, you're helping reduce waste and resource consumption." : 
+            "By choosing second-hand or refurbished items, you're extending product lifecycles and reducing waste.",
+          environmentalBenefits: !needsProduct ?
+            "Reducing consumption: Decreases resource extraction, manufacturing emissions, packaging waste, and eventual disposal impacts." :
+            "Choosing second-hand: Reduces demand for new products, saves manufacturing energy, and keeps usable items out of landfills."
+        }]
+      });
     }
   }
   
@@ -172,6 +267,11 @@ export default function AcquirePage() {
     setPreview(null)
     setResults(null)
     setError(null)
+    setShowReflection(false)
+    setNeedsProduct(false)
+    setNeedsNewItem(false)
+    setReflectionComplete(false)
+    setAnalyzedItem("")
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -221,94 +321,168 @@ export default function AcquirePage() {
                         Take or upload a photo of a product to find eco-friendly alternatives
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      {error && (
-                        <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-500">
-                          <AlertCircle className="h-4 w-4" />
-                          <span>{error}</span>
-                        </div>
-                      )}
-                      
-                      {preview ? (
-                        <div className="relative mb-4 overflow-hidden rounded-lg border">
-                          <Image
-                            src={preview || ""}
-                            alt="Selected product"
-                            width={500}
-                            height={300}
-                            className="h-64 w-full object-contain"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-2 top-2 rounded-full p-1"
-                            onClick={resetUploadForm}
+                    {!showReflection ? (
+                      <CardContent>
+                        {error && (
+                          <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-500">
+                            <AlertCircle className="h-4 w-4" />
+                            <span>{error}</span>
+                          </div>
+                        )}
+                        
+                        {preview ? (
+                          <div className="relative mb-4 overflow-hidden rounded-lg border">
+                            <Image
+                              src={preview || ""}
+                              alt="Selected product"
+                              width={500}
+                              height={300}
+                              className="h-64 w-full object-contain"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-2 top-2 rounded-full p-1"
+                              onClick={resetUploadForm}
+                            >
+                              <Trash className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div
+                            className="mb-4 flex h-64 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-green-300"
+                            onDrop={handleDrop}
+                            onDragOver={(e) => e.preventDefault()}
                           >
-                            <Trash className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div
-                          className="mb-4 flex h-64 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-green-300"
-                          onDrop={handleDrop}
-                          onDragOver={(e) => e.preventDefault()}
-                        >
-                          <p className="mb-2 text-center text-sm text-gray-500">
-                            Drag and drop a product image here, or click to select
-                          </p>
+                            <p className="mb-2 text-center text-sm text-gray-500">
+                              Drag and drop a product image here, or click to select
+                            </p>
+                            <Button 
+                              variant="outline" 
+                              className="mb-2"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <Upload className="mr-2 h-4 w-4" />
+                              Select Image
+                            </Button>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={handleFileChange}
+                              ref={fileInputRef}
+                            />
+                            <p className="text-xs text-gray-500">
+                              Supports: JPG, PNG, GIF (Max 5MB)
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="grid gap-4 sm:grid-cols-2">
                           <Button 
                             variant="outline" 
-                            className="mb-2"
-                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center justify-center gap-2 sm:flex-1"
+                            onClick={handleCameraCapture}
                           >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Select Image
+                            <Camera className="h-4 w-4" />
+                            Take Photo
                           </Button>
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={handleFileChange}
-                            ref={fileInputRef}
-                          />
-                          <p className="text-xs text-gray-500">
-                            Supports: JPG, PNG, GIF (Max 5MB)
-                          </p>
+                          <Button 
+                            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 sm:flex-1"
+                            disabled={!selectedImage || isAnalyzing}
+                            onClick={handleAnalyzeImage}
+                          >
+                            {isAnalyzing ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Finding Alternatives...
+                              </>
+                            ) : (
+                              <>
+                                <Leaf className="h-4 w-4" />
+                                Find Eco-Alternatives
+                              </>
+                            )}
+                          </Button>
                         </div>
-                      )}
-                      
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <Button 
-                          variant="outline" 
-                          className="flex items-center justify-center gap-2 sm:flex-1"
-                          onClick={handleCameraCapture}
-                        >
-                          <Camera className="h-4 w-4" />
-                          Take Photo
-                        </Button>
-                        <Button 
-                          className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 sm:flex-1"
-                          disabled={!selectedImage || isAnalyzing}
-                          onClick={handleAnalyzeImage}
-                        >
-                          {isAnalyzing ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Finding Alternatives...
-                            </>
-                          ) : (
-                            <>
-                              <Leaf className="h-4 w-4" />
-                              Find Eco-Alternatives
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    ) : (
+                      <CardContent>
+                        <div className="space-y-6">
+                          <div className="rounded-lg border bg-green-50 p-4">
+                            <h3 className="mb-2 text-lg font-medium text-green-800">Consumption Reflection</h3>
+                            <p className="mb-4 text-sm text-gray-700">
+                              Before suggesting alternatives, let's consider sustainable consumption principles.
+                              Please reflect on the following questions:
+                            </p>
+                            
+                            <div className="space-y-4">
+                              <div className="flex items-start space-x-2">
+                                <div className="mt-1">
+                                  <input 
+                                    type="checkbox" 
+                                    id="needsProduct" 
+                                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                    checked={needsProduct}
+                                    onChange={(e) => setNeedsProduct(e.target.checked)}
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="needsProduct" className="block text-sm font-medium text-gray-700">
+                                    Do you really need {analyzedItem || "this product"}?
+                                  </label>
+                                  <p className="text-xs text-gray-500">
+                                    The most sustainable choice is often to avoid unnecessary purchases (Reduce).
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start space-x-2">
+                                <div className="mt-1">
+                                  <input 
+                                    type="checkbox" 
+                                    id="needsNewItem" 
+                                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                    checked={needsNewItem}
+                                    onChange={(e) => setNeedsNewItem(e.target.checked)}
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="needsNewItem" className="block text-sm font-medium text-gray-700">
+                                    Do you need to get a new item?
+                                  </label>
+                                  <p className="text-xs text-gray-500">
+                                    Consider second-hand, borrowing, or repairing existing items (Reuse).
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <Button 
+                            onClick={handleReflectionComplete}
+                            className="w-full bg-green-600 hover:bg-green-700"
+                          >
+                            Continue
+                          </Button>
+                          
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={resetUploadForm}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </CardContent>
+                    )}
                     <CardFooter className="flex flex-col bg-gray-50 text-center text-sm text-gray-500">
                       <p className="flex items-center justify-center">
                         <Info className="mr-1 h-3 w-3" />
-                        Your image will be analyzed by our AI to suggest sustainable alternatives
+                        {!showReflection ? 
+                          "Your image will be analyzed by our AI to suggest sustainable alternatives" :
+                          "Sustainable consumption follows the principle: Reduce → Reuse → Recycle"
+                        }
                       </p>
                     </CardFooter>
                   </>

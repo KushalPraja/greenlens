@@ -21,6 +21,13 @@ export default function GetRidPage() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
+  // New state for the expanded categories
+  const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({
+    reduce: false,
+    reuse: false,
+    recycle: true  // Default to showing recycle options
+  })
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -114,6 +121,40 @@ export default function GetRidPage() {
     setError(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
+    }
+  }
+  
+  // Helper to toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
+  }
+  
+  // Categorize disposal options into the 3Rs: Reduce, Reuse, Recycle
+  const categorizeOptions = () => {
+    if (!results?.disposalOptions) return { reduce: [], reuse: [], recycle: [] }
+    
+    return {
+      reduce: results.disposalOptions.filter((option: any) => 
+        option.method.toLowerCase().includes('reduc') || 
+        option.method.toLowerCase().includes('avoid') ||
+        option.method.toLowerCase().includes('prevent') ||
+        option.description.toLowerCase().includes('reduc')),
+      
+      reuse: results.disposalOptions.filter((option: any) => 
+        option.method.toLowerCase().includes('reus') || 
+        option.method.toLowerCase().includes('donat') || 
+        option.method.toLowerCase().includes('repair') ||
+        option.method.toLowerCase().includes('upcycl') ||
+        option.description.toLowerCase().includes('reus')),
+      
+      recycle: results.disposalOptions.filter((option: any) => 
+        option.method.toLowerCase().includes('recycl') || 
+        option.method.toLowerCase().includes('compost') ||
+        option.method.toLowerCase().includes('dispos') ||
+        option.description.toLowerCase().includes('recycl'))
     }
   }
   
@@ -288,36 +329,217 @@ export default function GetRidPage() {
                     </div>
                   </div>
                   
-                  <div className="mt-6 space-y-6">
-                    {results.disposalOptions?.map((option: { method: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; description: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; steps: any[]; environmentalImpact: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined }, index: Key | null | undefined) => (
-                      <div key={index} className={`rounded-lg border p-4 ${index === 0 ? 'border-green-200 bg-green-50' : ''}`}>
-                        <div className="mb-2 flex items-start justify-between">
-                          <h3 className={`text-lg font-medium ${index === 0 ? 'text-green-800' : 'text-gray-800'}`}>
-                            {option.method}
-                            {index === 0 && (
-                              <Badge className="ml-2 bg-green-600">Recommended</Badge>
+                  {/* 3Rs Tree Structure */}
+                  <div className="mb-6 rounded-lg border bg-green-50/50 p-4">
+                    <h3 className="mb-2 text-lg font-medium text-green-800">Sustainable Hierarchy</h3>
+                    <p className="mb-4 text-sm text-gray-600">
+                      Follow the 3Rs hierarchy for the most sustainable approach: Reduce → Reuse → Recycle
+                    </p>
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    {/* Categorized options using our helper function */}
+                    {(() => {
+                      const categorized = categorizeOptions();
+                      return (
+                        <>
+                          {/* REDUCE section */}
+                          <div className="rounded-lg border shadow-sm">
+                            <button
+                              onClick={() => toggleCategory('reduce')}
+                              className={`flex w-full items-center justify-between rounded-t-lg p-4 text-left ${
+                                expandedCategories.reduce ? 'bg-green-100' : 'bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-200">
+                                  <span className="text-sm font-semibold text-green-800">1</span>
+                                </div>
+                                <div>
+                                  <h3 className="text-lg font-medium text-green-800">Reduce</h3>
+                                  <p className="text-xs text-gray-600">Best option: Avoid waste creation</p>
+                                </div>
+                              </div>
+                              <div className="text-green-600">
+                                {expandedCategories.reduce ? (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m18 15-6-6-6 6"/>
+                                  </svg>
+                                ) : (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m6 9 6 6 6-6"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+                            
+                            {expandedCategories.reduce && (
+                              <div className="p-4">
+                                {categorized.reduce.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {categorized.reduce.map((option: any, index: number) => (
+                                      <div key={index} className="rounded-lg border bg-white p-4">
+                                        <h4 className="mb-2 font-medium text-green-800">{option.method}</h4>
+                                        <p className="mb-3 text-sm text-gray-600">{option.description}</p>
+                                        {option.steps && option.steps.length > 0 && (
+                                          <div className="mb-3">
+                                            <h5 className="mb-1 text-xs font-medium text-gray-700">How to do it:</h5>
+                                            <ul className="ml-5 list-disc space-y-1 text-xs text-gray-600">
+                                              {option.steps.map((step: string, stepIndex: number) => (
+                                                <li key={stepIndex}>{step}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {option.environmentalImpact && (
+                                          <div className="rounded border-l-4 border-green-500 bg-green-50 p-2 text-xs text-green-800">
+                                            <span className="font-medium">Environmental Impact:</span> {option.environmentalImpact}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="rounded-lg border bg-white p-4 text-center">
+                                    <p className="text-sm text-gray-500">No reduce options available for this item.</p>
+                                  </div>
+                                )}
+                              </div>
                             )}
-                          </h3>
-                        </div>
-                        <p className="mb-4 text-sm text-gray-600">{option.description}</p>
-                        {option.steps && (
-                          <div className="mb-4 space-y-2">
-                            <h4 className="text-sm font-medium text-gray-700">How to do it:</h4>
-                            <ul className="list-inside list-disc space-y-1 text-sm text-gray-600">
-                              {option.steps.map((step, stepIndex) => (
-                                <li key={stepIndex}>{step}</li>
-                              ))}
-                            </ul>
                           </div>
-                        )}
-                        {option.environmentalImpact && (
-                          <div className="rounded-lg bg-green-100 p-3 text-sm text-green-700">
-                            <h4 className="mb-1 font-medium">Environmental Impact</h4>
-                            <p>{option.environmentalImpact}</p>
+                          
+                          {/* REUSE section */}
+                          <div className="rounded-lg border shadow-sm">
+                            <button
+                              onClick={() => toggleCategory('reuse')}
+                              className={`flex w-full items-center justify-between rounded-t-lg p-4 text-left ${
+                                expandedCategories.reuse ? 'bg-blue-100' : 'bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-200">
+                                  <span className="text-sm font-semibold text-blue-800">2</span>
+                                </div>
+                                <div>
+                                  <h3 className="text-lg font-medium text-blue-800">Reuse</h3>
+                                  <p className="text-xs text-gray-600">Better option: Give item a second life</p>
+                                </div>
+                              </div>
+                              <div className="text-blue-600">
+                                {expandedCategories.reuse ? (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m18 15-6-6-6 6"/>
+                                  </svg>
+                                ) : (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m6 9 6 6 6-6"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+                            
+                            {expandedCategories.reuse && (
+                              <div className="p-4">
+                                {categorized.reuse.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {categorized.reuse.map((option: any, index: number) => (
+                                      <div key={index} className="rounded-lg border bg-white p-4">
+                                        <h4 className="mb-2 font-medium text-blue-800">{option.method}</h4>
+                                        <p className="mb-3 text-sm text-gray-600">{option.description}</p>
+                                        {option.steps && option.steps.length > 0 && (
+                                          <div className="mb-3">
+                                            <h5 className="mb-1 text-xs font-medium text-gray-700">How to do it:</h5>
+                                            <ul className="ml-5 list-disc space-y-1 text-xs text-gray-600">
+                                              {option.steps.map((step: string, stepIndex: number) => (
+                                                <li key={stepIndex}>{step}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {option.environmentalImpact && (
+                                          <div className="rounded border-l-4 border-blue-500 bg-blue-50 p-2 text-xs text-blue-800">
+                                            <span className="font-medium">Environmental Impact:</span> {option.environmentalImpact}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="rounded-lg border bg-white p-4 text-center">
+                                    <p className="text-sm text-gray-500">No reuse options available for this item.</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          
+                          {/* RECYCLE section */}
+                          <div className="rounded-lg border shadow-sm">
+                            <button
+                              onClick={() => toggleCategory('recycle')}
+                              className={`flex w-full items-center justify-between rounded-t-lg p-4 text-left ${
+                                expandedCategories.recycle ? 'bg-amber-100' : 'bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-200">
+                                  <span className="text-sm font-semibold text-amber-800">3</span>
+                                </div>
+                                <div>
+                                  <h3 className="text-lg font-medium text-amber-800">Recycle</h3>
+                                  <p className="text-xs text-gray-600">Last resort: Process and transform material</p>
+                                </div>
+                              </div>
+                              <div className="text-amber-600">
+                                {expandedCategories.recycle ? (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m18 15-6-6-6 6"/>
+                                  </svg>
+                                ) : (
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m6 9 6 6 6-6"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+                            
+                            {expandedCategories.recycle && (
+                              <div className="p-4">
+                                {categorized.recycle.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {categorized.recycle.map((option: any, index: number) => (
+                                      <div key={index} className="rounded-lg border bg-white p-4">
+                                        <h4 className="mb-2 font-medium text-amber-800">{option.method}</h4>
+                                        <p className="mb-3 text-sm text-gray-600">{option.description}</p>
+                                        {option.steps && option.steps.length > 0 && (
+                                          <div className="mb-3">
+                                            <h5 className="mb-1 text-xs font-medium text-gray-700">How to do it:</h5>
+                                            <ul className="ml-5 list-disc space-y-1 text-xs text-gray-600">
+                                              {option.steps.map((step: string, stepIndex: number) => (
+                                                <li key={stepIndex}>{step}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {option.environmentalImpact && (
+                                          <div className="rounded border-l-4 border-amber-500 bg-amber-50 p-2 text-xs text-amber-800">
+                                            <span className="font-medium">Environmental Impact:</span> {option.environmentalImpact}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="rounded-lg border bg-white p-4 text-center">
+                                    <p className="text-sm text-gray-500">No recycling options available for this item.</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
                     
                     {(!results.disposalOptions || results.disposalOptions.length === 0) && (
                       <div className="rounded-lg border p-6 text-center">
