@@ -135,7 +135,6 @@ export default function AcquirePage() {
       }
     } catch (err) {
       console.error("Error identifying image:", err);
-      // If we can't identify, it's OK - we'll proceed with reflection anyway
       setAnalyzedItem("this product");
     }
   }
@@ -149,52 +148,43 @@ export default function AcquirePage() {
       
       try {
         const formData = new FormData();
-        formData.append('file', selectedImage!, selectedImage!.name);  // Add filename
+        formData.append('file', selectedImage!, selectedImage!.name);
         formData.append('context', 'acquire');
         
         const response = await ImageService.analyzeImage(formData);
         
-        // Handle the response properly - parse the JSON from the description if needed
+        // Handle the response properly
         let processedResponse = { ...response };
         
-        if (response.disposalOptions && response.disposalOptions.length > 0) {
-          try {
-            // Check if response contains nested JSON in the description field
-            const descriptionText = response.disposalOptions[0].description;
-            if (descriptionText && descriptionText.includes('```json')) {
-              // Extract the JSON string from the markdown code block
-              const jsonMatch = descriptionText.match(/```json\n([\s\S]*?)```/);
-              if (jsonMatch && jsonMatch[1]) {
-                // Parse the JSON string into objects
-                const parsedItems = JSON.parse(jsonMatch[1]);
-                
-                // Transform the data into the expected format for the frontend
-                processedResponse = {
-                  itemName: response.itemName || "Analyzed Item",
-                  itemDescription: response.itemDescription || "Analysis complete",
-                  suggestions: parsedItems.map((item: any) => ({
-                    name: item.itemName,
-                    description: item.itemDescription,
-                    environmentalBenefits: item.disposalOptions ? 
-                      item.disposalOptions.map((opt: any) => `${opt.method}: ${opt.description}`).join('\n\n') : 
-                      "No specific environmental benefits information available."
-                  }))
-                };
-              }
-            }
-          } catch (parseError) {
-            console.error("Error parsing response JSON:", parseError);
-            // If parsing fails, still show something to the user
-            processedResponse = {
-              itemName: "Analysis Result",
-              itemDescription: "We found some eco-friendly alternatives",
-              suggestions: [{
-                name: "Eco-friendly Alternative",
-                description: "Please see the details below",
-                environmentalBenefits: response.disposalOptions[0].description
-              }]
-            };
-          }
+        // Check if the response has the new sustainableAlternatives format
+        if (response.sustainableAlternatives && response.sustainableAlternatives.length > 0) {
+          // Already in the correct format, just need to map to our frontend structure
+          processedResponse = {
+            itemName: response.itemName || "Analyzed Item",
+            itemDescription: response.itemDescription || "Here are sustainable alternatives",
+            suggestions: response.sustainableAlternatives.map((alt: any) => ({
+              name: alt.productName,
+              description: alt.description,
+              environmentalBenefits: alt.environmentalBenefits,
+              whereToBuy: alt.whereToBuy,
+              priceRange: alt.priceRange,
+              sustainabilityFeatures: alt.sustainabilityFeatures
+            }))
+          };
+        } 
+        // Fallback to the old format if needed
+        else if (response.disposalOptions && response.disposalOptions.length > 0) {
+          processedResponse = {
+            itemName: response.itemName || "Analyzed Item",
+            itemDescription: response.itemDescription || "Here are sustainable alternatives",
+            suggestions: response.disposalOptions.map((option: any) => ({
+              name: option.method,
+              description: option.description,
+              environmentalBenefits: option.environmentalImpact,
+              steps: option.steps,
+              additionalInfo: option.additionalResources
+            }))
+          };
         }
         
         setResults(processedResponse);
@@ -220,7 +210,13 @@ export default function AcquirePage() {
             "By choosing second-hand or refurbished items, you're extending product lifecycles and reducing waste.",
           environmentalBenefits: !needsProduct ?
             "Reducing consumption: Decreases resource extraction, manufacturing emissions, packaging waste, and eventual disposal impacts." :
-            "Choosing second-hand: Reduces demand for new products, saves manufacturing energy, and keeps usable items out of landfills."
+            "Choosing second-hand: Reduces demand for new products, saves manufacturing energy, and keeps usable items out of landfills.",
+          steps: !needsProduct ? 
+            ["Consider if you can repurpose items you already own", "Borrow or rent items for temporary needs", "Practice mindful consumption"] :
+            ["Check local thrift stores and second-hand marketplaces", "Look for refurbished options", "Join local buy-nothing groups"],
+          additionalInfo: !needsProduct ?
+            "Visit our Learn section for tips on minimalist living and sustainable consumption." :
+            "Check out our Map section to find local thrift stores and donation centers."
         }]
       });
     }
@@ -531,10 +527,72 @@ export default function AcquirePage() {
                       <div className="space-y-4">
                         {results?.suggestions?.map((suggestion:any, index:any) => (
                           <div key={index} className="rounded-lg border p-4">
+                            <div className="mb-2 flex items-start justify-between">
+                              <h3 className="text-lg font-medium text-green-800">{suggestion.name}</h3>
+                              {suggestion.priceRange && (
+                                <Badge variant="outline" className="bg-gray-50">
+                                  {suggestion.priceRange}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="mb-3 text-sm text-gray-600">{suggestion.description}</p>
+                            
+                            {/* Where to buy section */}
+                            {suggestion.whereToBuy && suggestion.whereToBuy.length > 0 && (
+                              <div className="mb-3">
+                                <h4 className="mb-2 text-sm font-medium text-gray-700">Available At:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {Array.isArray(suggestion.whereToBuy) ? (
+                                    suggestion.whereToBuy.map((store: string, storeIndex: number) => (
+                                      <Badge key={storeIndex} variant="outline" className="bg-blue-50">
+                                        {store}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className="text-sm text-gray-600">{suggestion.whereToBuy}</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Fallback to steps if whereToBuy is not available */}
+                            {!suggestion.whereToBuy && suggestion.steps && suggestion.steps.length > 0 && (
+                              <div className="mb-3">
+                                <h4 className="mb-2 text-sm font-medium text-gray-700">How to Find:</h4>
+                                <ul className="ml-5 list-disc space-y-1 text-sm text-gray-600">
+                                  {suggestion.steps.map((step: string, stepIndex: number) => (
+                                    <li key={stepIndex}>{step}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Sustainability features */}
+                            {suggestion.sustainabilityFeatures && suggestion.sustainabilityFeatures.length > 0 && (
+                              <div className="mb-3">
+                                <h4 className="mb-2 text-sm font-medium text-gray-700">Key Features:</h4>
+                                <ul className="ml-5 list-disc space-y-1 text-sm text-gray-600">
+                                  {suggestion.sustainabilityFeatures.map((feature: string, featureIndex: number) => (
+                                    <li key={featureIndex}>{feature}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Environmental benefits */}
+                            {suggestion.environmentalBenefits && (
                               <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
                                 <h4 className="mb-1 font-medium">Environmental Benefits</h4>
                                 <p>{suggestion.environmentalBenefits}</p>
                               </div>
+                            )}
+                            
+                            {/* Additional info */}
+                            {suggestion.additionalInfo && (
+                              <div className="mt-3 text-xs text-gray-500">
+                                <p>{suggestion.additionalInfo}</p>
+                              </div>
+                            )}
                           </div>
                         ))}
                         

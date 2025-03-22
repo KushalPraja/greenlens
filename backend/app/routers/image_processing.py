@@ -25,6 +25,63 @@ if not api_key:
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-2.0-flash")  # Use gemini-pro-vision for image processing
 
+def get_context_specific_prompt(context: str) -> str:
+    if context == "acquire":
+        return f"""Analyze this image and suggest specific eco-friendly alternatives that can be purchased online or in stores. For each alternative:
+
+        1. Provide the EXACT name of a real sustainable product that's better for the environment (e.g., "Energizer Recharge Universal Rechargeable Batteries")
+        2. Include specific retailers or websites where it can be purchased (e.g., "Available at Amazon, Target, and Best Buy")
+        3. Mention price range if possible (e.g., "$15-20 for a pack of 4")
+        4. Explain what makes this product more sustainable than conventional alternatives
+        5. Include any eco-certifications the product may have
+
+        Format your response in this JSON structure:
+        {{
+            "itemName": "Name of the item in the image",
+            "itemDescription": "Brief description of what you see",
+            "categories": ["Category1", "Category2"],
+            "sustainableAlternatives": [
+                {{
+                    "productName": "Specific product name",
+                    "description": "Details about the sustainable product",
+                    "whereToBuy": ["Amazon", "Target", "Specialized retailer"],
+                    "priceRange": "$XX-$YY",
+                    "sustainabilityFeatures": ["Feature 1", "Feature 2", "Feature 3"],
+                    "environmentalBenefits": "Environmental benefits of choosing this alternative"
+                }}
+            ],
+            "additionalResources": "Additional information",
+            "resourceLink": "URL for more information"
+        }}
+        
+        Provide at least 3 specific product alternatives with real product names that consumers can purchase."""
+    elif context == "dispose":
+        return f"""Analyze this image and provide three types of options organized by the 3Rs (Reduce, Reuse, Recycle) hierarchy.
+        Consider:
+        1. REDUCE options: Ways to avoid generating waste with this type of item in the future
+        2. REUSE options: Ways to repurpose or give the item a second life
+        3. RECYCLE options: Proper recycling or disposal methods if reduction and reuse aren't possible
+        
+        Format your response in this JSON structure:
+        {create_response_format()}
+        
+        Ensure the disposal options include at least one option for each category:
+        - Include "Reduce:" prefix for waste reduction methods
+        - Include "Reuse:" prefix for reuse/repurposing methods
+        - Include "Recycle:" prefix for recycling/disposal methods
+        
+        For each option:
+        - method: Start with the appropriate prefix (Reduce/Reuse/Recycle)
+        - description: Detailed explanation of the method
+        - steps: Specific actionable steps to implement the method
+        - environmentalImpact: Environmental benefits of this approach"""
+    
+    elif context == "identify":
+        return """Briefly identify what's in this image. Just provide the name of the item or product category you see. Keep it short and concise."""
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid context specified")
+
 @router.post("/analyze")
 async def analyze_image(
     file: UploadFile = File(...),
@@ -59,40 +116,7 @@ async def analyze_image(
     
     try:
         # Create prompt based on context
-        if context == "acquire":
-            prompt = """Analyze this image and provide sustainable alternatives in the following JSON format:
-            {
-                "itemName": "Name of the item in the image",
-                "itemDescription": "Brief description of what you see",
-                "categories": ["Category1", "Category2"],
-                "disposalOptions": [
-                    {
-                        "method": "Sustainable Alternative 1",
-                        "description": "Detailed description",
-                        "steps": ["Step 1", "Step 2", "Step 3"],
-                        "environmentalImpact": "Environmental benefits"
-                    }
-                ],
-                "additionalResources": "Additional information",
-                "resourceLink": "URL for more information"
-            }"""
-        else:
-            prompt = """Analyze this image and provide disposal/recycling options in the following JSON format:
-            {
-                "itemName": "Name of the item in the image",
-                "itemDescription": "Brief description of what you see",
-                "categories": ["Category1", "Category2"],
-                "disposalOptions": [
-                    {
-                        "method": "Disposal Method 1",
-                        "description": "Detailed description",
-                        "steps": ["Step 1", "Step 2", "Step 3"],
-                        "environmentalImpact": "Environmental impact explanation"
-                    }
-                ],
-                "additionalResources": "Additional recycling information",
-                "resourceLink": "URL for more information"
-            }"""
+        prompt = get_context_specific_prompt(context)
         
         # Process with Gemini - remove the await keyword
         image_data = {"mime_type": file.content_type, "data": contents}
