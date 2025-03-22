@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-md">
-        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Recycle className="h-6 w-6 text-green-600" />
             <span className="text-xl font-bold text-green-800">GreenLens</span>
@@ -46,7 +46,7 @@ export default function Home() {
               />
             </svg>
           </div>
-          <div className="container relative z-10 px-4 md:px-6">
+          <div className="container mx-auto relative z-10 px-4 md:px-6">
             <div className="mx-auto max-w-4xl text-center">
               <div className="inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
                 Hackathon Project
@@ -74,7 +74,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="container relative z-10 mt-16 px-4 md:px-6">
+          <div className="container mx-auto relative z-10 mt-16 px-4 md:px-6">
             <div className="mx-auto flex max-w-5xl justify-center">
               <div className="relative h-[300px] w-full overflow-hidden rounded-xl shadow-xl sm:h-[400px] md:h-[500px]">
                 <Image
@@ -96,7 +96,7 @@ export default function Home() {
         </section>
 
         <section className="py-16 md:py-24">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-green-900 sm:text-4xl">How GreenLens Works</h2>
               <p className="mt-4 text-lg text-gray-600">
@@ -160,7 +160,7 @@ export default function Home() {
         </section>
 
         <section className="bg-green-50 py-16 md:py-24">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
               <div className="flex flex-col justify-center">
                 <h2 className="text-3xl font-bold tracking-tight text-green-900 sm:text-4xl">Hackathon Features</h2>
@@ -241,7 +241,7 @@ export default function Home() {
         </section>
 
         <section className="py-16 md:py-24">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-green-900 sm:text-4xl">
                 Join Our Growing Community
@@ -268,7 +268,7 @@ export default function Home() {
         </section>
       </main>
       <footer className="border-t bg-white py-8">
-        <div className="container px-4 md:px-6">
+        <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="flex items-center gap-2">
               <Recycle className="h-6 w-6 text-green-600" />
@@ -281,7 +281,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  
   )
 }
 
