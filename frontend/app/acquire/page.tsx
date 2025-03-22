@@ -502,28 +502,31 @@ export default function AcquirePage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
-                        <div className="overflow-hidden rounded-lg border">
-                          <Image
-                            src={preview || ""}
-                            alt="Analyzed product"
-                            width={300}
-                            height={200}
-                            className="h-48 w-full object-contain"
-                          />
-                          <div className="p-3">
-                            <p className="mb-2 text-sm font-medium text-gray-700">
-                              Here are eco-friendly alternatives to consider:
-                            </p>
-                            <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                      <div className="overflow-hidden rounded-lg border">
+                        <Image
+                          src={typeof preview === 'string' ? preview : ''}
+                          alt="Analyzed item"
+                          width={300}
+                          height={200}
+                          className="h-48 w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <h3 className="mb-2 text-lg font-medium text-green-800">
+                          {results.itemName || "Analyzed Product"}
+                        </h3>
+                        <p className="mb-2 text-sm font-medium text-gray-700">
+                          Here are eco-friendly alternatives to consider:
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
                               <Badge className="bg-green-100 text-green-800">Sustainable</Badge>
                               <Badge className="bg-blue-100 text-blue-800">Reusable</Badge>
                               <Badge className="bg-amber-100 text-amber-800">Eco-Friendly</Badge>
-                            </div>
-                          </div>
                         </div>
                       </div>
-                      
+                    </div>
+                    
                       <div className="space-y-4">
                         {results?.suggestions?.map((suggestion:any, index:any) => (
                           <div key={index} className="rounded-lg border p-4">
