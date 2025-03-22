@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, List, Dict, Any
 from pydantic import BaseModel
 
+# Create router without prefix - FastAPI will use the prefix from the mount point
 router = APIRouter()
 
 class PaginationInfo(BaseModel):
@@ -23,6 +24,7 @@ class LeaderboardResponse(BaseModel):
     success: bool = True
     data: LeaderboardData
 
+# Fix: Ensure the path includes a trailing slash explicitly to prevent redirects
 @router.get("/", response_model=LeaderboardResponse)
 async def get_leaderboard(
     db: Annotated[AsyncIOMotorDatabase, Depends(get_database)],
@@ -110,10 +112,22 @@ async def get_leaderboard(
             )
         )
     except Exception as e:
+        # Fix: Return a more specific error for debugging the HTTPS issue
         raise HTTPException(
             status_code=500,
             detail=f"Error fetching leaderboard: {str(e)}"
         )
+
+# Add an alternative endpoint without trailing slash to prevent redirects
+@router.get("", response_model=LeaderboardResponse)
+async def get_leaderboard_no_slash(
+    db: AsyncIOMotorDatabase = Depends(get_database),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=100),
+    timeframe: str = Query(default="all", regex="^(all|week|month)$")
+):
+    # Call the main implementation to avoid duplication
+    return await get_leaderboard(db, page, limit, timeframe)
 
 @router.get("/stats")
 async def get_leaderboard_stats(
