@@ -63,7 +63,33 @@ def get_context_specific_prompt(context: str) -> str:
         3. RECYCLE options: Proper recycling or disposal methods if reduction and reuse aren't possible
         
         Format your response in this JSON structure:
-        {create_response_format()}
+        {{
+            "itemName": "Name of the item in the image",
+            "itemDescription": "Brief description of what you see",
+            "categories": ["Category1", "Category2"],
+            "disposalOptions": [
+                {{
+                    "method": "Reduce: [disposal method]",
+                    "description": "Detailed description of waste reduction approach",
+                    "steps": ["Step 1", "Step 2", "Step 3"],
+                    "environmentalImpact": "Environmental benefits of this approach"
+                }},
+                {{
+                    "method": "Reuse: [disposal method]",
+                    "description": "Detailed description of reuse approach",
+                    "steps": ["Step 1", "Step 2", "Step 3"],
+                    "environmentalImpact": "Environmental benefits of this approach"
+                }},
+                {{
+                    "method": "Recycle: [disposal method]",
+                    "description": "Detailed description of recycling approach",
+                    "steps": ["Step 1", "Step 2", "Step 3"],
+                    "environmentalImpact": "Environmental benefits of this approach"
+                }}
+            ],
+            "additionalResources": "Additional recycling information",
+            "resourceLink": "URL for more information"
+        }}
         
         Ensure the disposal options include at least one option for each category:
         - Include "Reduce:" prefix for waste reduction methods
@@ -81,6 +107,25 @@ def get_context_specific_prompt(context: str) -> str:
     
     else:
         raise HTTPException(status_code=400, detail="Invalid context specified")
+
+def create_response_format():
+    return """
+    {
+        "itemName": "Name of the item",
+        "itemDescription": "Brief description of what you see",
+        "categories": ["Category1", "Category2"],
+        "disposalOptions": [
+            {
+                "method": "Method name",
+                "description": "Detailed description",
+                "steps": ["Step 1", "Step 2", "Step 3"],
+                "environmentalImpact": "Environmental impact explanation"
+            }
+        ],
+        "additionalResources": "Additional information",
+        "resourceLink": "URL for more information"
+    }
+    """
 
 @router.post("/analyze")
 async def analyze_image(
