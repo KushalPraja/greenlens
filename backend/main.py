@@ -79,7 +79,8 @@ from app.routers import (
     points,
     leaderboard,
     image_processing,
-    quests
+    quests,
+    disposal_results
 )
 
 # Include all routers with their prefixes
@@ -90,6 +91,7 @@ app.include_router(points.router, prefix="/api/points", tags=["Points"])
 app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["Leaderboard"])
 app.include_router(image_processing.router, prefix="/api/image", tags=["Image Processing"])
 app.include_router(quests.router, prefix="/api/quests", tags=["Quests"])
+app.include_router(disposal_results.router, prefix="/api/disposal-results", tags=["Disposal Results"])
 
 # Apply middleware to all routes
 @app.middleware("http")

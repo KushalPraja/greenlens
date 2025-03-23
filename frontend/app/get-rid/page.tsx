@@ -3,7 +3,7 @@ import { useState, useRef, JSXElementConstructor, Key, ReactElement, ReactNode, 
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, Camera, Image as ImageIcon, Loader2, Info, AlertCircle, Recycle, Trash, RefreshCw, MapPin, ExternalLink, Leaf } from "lucide-react"
+import { ArrowLeft, Upload, Camera, Image as ImageIcon, Loader2, Info, AlertCircle, Recycle, Trash, RefreshCw, MapPin, ExternalLink, Leaf, Share2, Copy, CheckCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,10 @@ export default function GetRidPage() {
   const [results, setResults] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Share functionality states
+  const [isCopied, setIsCopied] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
   
   // New state for the expanded categories
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({
@@ -105,10 +109,26 @@ export default function GetRidPage() {
       formData.append('context', 'dispose')
       
       const response = await ImageService.analyzeImage(formData)
+      
+      // Save the result immediately to generate a shareable link
+      if (response) {
+        // Add the image path to the response
+        const responseWithImage = {
+          ...response,
+          imagePath: response.imagePath || '' // Use existing path if available
+        }
+        
+        // Save to get a shareable ID
+        const savedResult = await ImageService.saveDisposalResult(responseWithImage)
+        
+        // Add the ID to the response object
+        response.id = savedResult.id
+      }
+      
       setResults(response);  // Use direct response since ImageService now handles data extraction
     } catch (err: any) {
       console.error("Error analyzing image:", err)
-      setError(err.detail || "Failed to analyze image. Please try again.")
+      setError(err?.detail || "Failed to analyze image. Please try again.")
     } finally {
       setIsAnalyzing(false)
     }
@@ -155,6 +175,33 @@ export default function GetRidPage() {
         option.method.toLowerCase().includes('compost') ||
         option.method.toLowerCase().includes('dispos') ||
         option.description.toLowerCase().includes('recycl'))
+    }
+  }
+
+  // Function to handle sharing the analysis result
+  const handleShare = async () => {
+    if (!results || !results.id) return
+    
+    setIsSharing(true)
+    
+    try {
+      // Set the URL to be copied to clipboard
+      const shareUrl = `${window.location.origin}/get-rid/${results.id}`
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(shareUrl)
+      
+      // Indicate success
+      setIsCopied(true)
+      
+      // Reset the copied status after 3 seconds
+      setTimeout(() => {
+        setIsCopied(false)
+      }, 3000)
+    } catch (err) {
+      console.error("Error sharing analysis:", err)
+    } finally {
+      setIsSharing(false)
     }
   }
   
@@ -584,6 +631,26 @@ export default function GetRidPage() {
                       )}
                     </div>
                   )}
+
+                  {/* Share button */}
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2"
+                    onClick={handleShare}
+                    disabled={isSharing}
+                  >
+                    {isCopied ? (
+                      <>
+                        <CheckCheck className="h-4 w-4" />
+                        Link Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="h-4 w-4" />
+                        Share Analysis
+                      </>
+                    )}
+                  </Button>
                 </CardFooter>
               </>
             )}

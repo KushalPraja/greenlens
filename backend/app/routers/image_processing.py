@@ -192,6 +192,9 @@ async def analyze_image(
                     "additionalResources": "Contact your local recycling center for specific guidelines."
                 }
             
+            # Add the image path to the result
+            result["imagePath"] = file_path
+            
             # Award points if user is authenticated
             if current_user:
                 points_action = "Searched for eco-friendly alternatives" if context == "acquire" else "Sought recycling/reuse suggestions"

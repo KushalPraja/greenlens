@@ -12,3 +12,5 @@ pydantic-settings==2.2.1
 pydantic[email]==2.6.3
 aiofiles==23.2.1
 cryptography>=41.0.0
+qrcode==7.4.2
+Pillow==10.2.0

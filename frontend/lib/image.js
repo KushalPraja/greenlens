@@ -59,6 +59,38 @@ const ImageService = {
       console.error('Product search error:', error);
       throw error.response?.data || { detail: error.message };
     }
+  },
+  
+  // Save a disposal result for sharing
+  saveDisposalResult: async (disposalData) => {
+    try {
+      const response = await apiClient.post('/disposal-results/', disposalData);
+      
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.detail || 'Failed to save disposal result');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Save disposal result error:', error);
+      throw error.response?.data || { detail: error.message };
+    }
+  },
+  
+  // Get a disposal result by ID
+  getDisposalResult: async (resultId) => {
+    try {
+      const response = await apiClient.get(`/disposal-results/${resultId}`);
+      
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.detail || 'Failed to get disposal result');
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      console.error('Get disposal result error:', error);
+      throw error.response?.data || { detail: error.message };
+    }
   }
 };
 
