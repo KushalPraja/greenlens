@@ -156,23 +156,6 @@ export default function Home() {
                 </Link>
                 <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-green-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
               </div>
-              <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md md:col-span-2 lg:col-span-1">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <Users className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="mb-2 text-xl font-bold text-green-800">Join the Community</h3>
-                <p className="mb-4 text-muted-foreground">
-                  Connect with like-minded individuals, share tips, and learn from others' experiences.
-                </p>
-                <Link
-                  href="/community"
-                  className="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-800"
-                >
-                  Explore Community
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-                <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-green-400 to-green-600 opacity-0 transition-opacity group-hover:opacity-100"></div>
-              </div>
               <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                   <Trophy className="h-6 w-6 text-green-600" />
@@ -198,7 +181,7 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6">
             <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
               <div className="flex flex-col justify-center">
-                <h2 className="text-3xl font-bold tracking-tight text-green-900 sm:text-4xl">Hackathon Features</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-green-900 sm:text-4xl">Features</h2>
                 <p className="mt-4 text-lg text-gray-600">
                   Explore our latest features designed to enhance your sustainable living journey.
                 </p>
@@ -257,17 +240,18 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-              <div className="relative rounded-xl bg-white p-1 shadow-xl">
-                <div className="aspect-video overflow-hidden rounded-lg">
+              <div className="relative rounded-xl bg-white shadow-xl">
+                <div className="relative overflow-hidden rounded-xl">
                   <Image
-                    src="/placeholder.svg?height=400&width=600"
+                    src="/features.png"
                     alt="GreenLens features"
                     width={600}
-                    height={400}
-                    className="h-full w-full object-cover"
+                    height={338}
+                    priority
+                    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
-                <div className="absolute -bottom-4 -right-4 rounded-lg bg-green-600 p-4 shadow-lg">
+                <div className="absolute bottom-4 right-4 rounded-lg bg-green-600 p-4 shadow-lg">
                   <Trophy className="h-8 w-8 text-white" />
                 </div>
               </div>
@@ -314,7 +298,7 @@ export default function Home() {
               <span className="text-xl font-bold text-green-800">GreenLens</span>
             </div>
             <p className="text-center text-sm text-gray-500">
-              Hackathon Project 2025 - Making sustainable choices easier through technology.
+              GenAI Genesis Project 2025 - Making sustainable choices easier through technology.
             </p>
           </div>
         </div>

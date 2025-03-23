@@ -75,7 +75,7 @@ async def get_disposal_result(
         serialized_doc = serialize_mongodb_doc(result)
         
         # Generate QR code for sharing
-        qr_url = f"{os.getenv('CLIENT_URL', 'http://localhost:3000')}/get-rid/{result_id}"
+        qr_url = f"{os.getenv('https://green-lens-blond.vercel.app')}/get-rid/{result_id}"
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,

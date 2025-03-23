@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
@@ -25,7 +25,7 @@ export default function DisposalResultPage() {
   // Share functionality states
   const [isCopied, setIsCopied] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
-  const [showQr, setShowQr] = useState(false)
+  const [showQr, setShowQr] = useState(true)  // Changed from false to true
   
   useEffect(() => {
     const fetchResult = async () => {
@@ -135,6 +135,7 @@ export default function DisposalResultPage() {
       </div>
     )
   }
+
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -157,6 +158,7 @@ export default function DisposalResultPage() {
             </p>
           </div>
           
+
           <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Disposal Options for {result?.itemName}</CardTitle>
@@ -165,57 +167,46 @@ export default function DisposalResultPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                {result?.imagePath && (
-                  <div className="overflow-hidden rounded-lg border">
-                    <Image
-                      src={`https://greenv4.wittyhill-45f93eb6.canadaeast.azurecontainerapps.io/${result.imagePath.replace(/^\.\//, '')}`}
-                      alt={result.itemName || "Analyzed item"}
-                      width={300}
-                      height={200}
-                      className="h-48 w-full object-contain"
-                    />
-                  </div>
-                )}
-                <div className="flex flex-col justify-center">
+                <div className="mb-6">
+                <div className="rounded-lg border bg-white p-6">
                   <h3 className="mb-2 text-lg font-medium text-green-800">
-                    {result?.itemName || "Item Analysis"}
+                  {result?.itemName || "Item Analysis"}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {result?.itemDescription || "Here are the best ways to dispose of this item."}
+                  {result?.itemDescription || "Here are the best ways to dispose of this item."}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {result?.categories?.map((category: string, index: number) => (
-                      <Badge key={index} className="bg-green-100 text-green-800">
-                        {category}
-                      </Badge>
-                    ))}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                  {result?.categories?.map((category: string, index: number) => (
+                    <Badge key={index} className="bg-green-100 text-green-800">
+                    {category}
+                    </Badge>
+                  ))}
                   </div>
                 </div>
-              </div>
-              
-              {showQr && result?.qrCode && (
+                </div>
+                
+                {(showQr) && result?.qrCode && (
                 <div className="mb-6 flex flex-col items-center justify-center rounded-lg border bg-white p-6">
                   <h3 className="mb-4 text-lg font-semibold text-green-800">Scan to Share</h3>
                   <div className="mb-4 overflow-hidden rounded-lg border p-2">
-                    <img 
-                      src={result.qrCode} 
-                      alt="QR Code" 
-                      className="h-52 w-52"
-                    />
+                  <img 
+                  src={result.qrCode} 
+                  alt="QR Code" 
+                  className="h-52 w-52"
+                  />
                   </div>
                   <p className="text-center text-sm text-gray-500">
-                    Scan this QR code to share these disposal recommendations
+                  Scan this QR code to share these disposal recommendations
                   </p>
                   <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => setShowQr(false)}
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setShowQr(false)}
                   >
-                    Hide QR Code
+                  Hide QR Code
                   </Button>
                 </div>
-              )}
+                )}
               
               {/* 3Rs Tree Structure */}
               <div className="mb-6 rounded-lg border bg-green-50/50 p-4">
