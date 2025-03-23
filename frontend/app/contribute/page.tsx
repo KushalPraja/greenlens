@@ -206,9 +206,19 @@ export default function ContributePage() {
       // Refresh quests and stats
       await Promise.all([
         fetchQuests(),
-        fetchImpactStats(),
-        AuthService.getCurrentUser() // This will update the user's points in the app state
+        fetchImpactStats()
       ]);
+
+      // Explicitly fetch updated user data with fresh server data
+      const updatedUser = await AuthService.getCurrentUser();
+      
+      // Update localStorage with fresh user data to ensure points are visible across the app
+      if (updatedUser) {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // Log to confirm points update
+        console.log('User points updated:', updatedUser.points);
+      }
 
     } catch (err: any) {
       console.error("Error submitting proof:", err);

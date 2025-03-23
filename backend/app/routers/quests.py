@@ -393,7 +393,7 @@ async def complete_quest(
         
         # Award points to user
         await db.users.update_one(
-            {"_id": current_user.id},
+            {"_id": ObjectId(current_user.id)},
             {
                 "$inc": {"points": points_awarded},
                 "$push": {
@@ -405,6 +405,10 @@ async def complete_quest(
                 }
             }
         )
+        
+        # Verify the update was successful
+        updated_user = await db.users.find_one({"_id": ObjectId(current_user.id)})
+        print(f"Updated user points: {updated_user.get('points', 0)}")
         
         result_data = {
             "message": "Quest completed successfully!",

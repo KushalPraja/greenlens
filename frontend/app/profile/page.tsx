@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, User, Edit, Award, Recycle, Upload, Settings, ChevronRight } from "lucide-react"
+import { ArrowLeft, Award, Recycle, Settings, Leaf, Globe, Compass, 
+  Droplets, Zap, Shield, LightbulbIcon, Trophy, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -42,6 +43,7 @@ export default function ProfilePage() {
     // Fetch user profile and points history
     const fetchUserData = async () => {
       try {
+        // Force a fresh fetch of user data from the server
         const userData = await AuthService.getCurrentUser()
         setUser(userData)
 
@@ -59,40 +61,111 @@ export default function ProfilePage() {
   }, [])
 
   // Calculate next badge threshold
-  const getNextBadgeProgress = () => {
-    if (!user) return { current: 0, next: 100, progress: 0, nextBadge: "Eco Starter" }
-
-    const thresholds = [
-      { points: 100, name: "Eco Starter" },
-      { points: 500, name: "Green Enthusiast" },
-      { points: 1000, name: "Sustainability Champion" },
-      { points: 5000, name: "Environmental Hero" },
-    ]
-
-    // Find the next badge the user doesn't have yet
-    const nextBadgeIndex = thresholds.findIndex(
-      threshold => user.points < threshold.points
-    )
-
-    if (nextBadgeIndex === -1) {
-      // User has all badges
+  const getBadgeAndLevelInfo = () => {
+    // Handle case when user is null
+    if (!user) {
       return {
-        current: user.points,
-        next: thresholds[thresholds.length - 1].points,
-        progress: 100,
-        nextBadge: "Maxed Out!"
-      }
+        current: 0,
+        next: 100,
+        progress: 0,
+        level: 0,
+        nextLevel: 1,
+        currentBadge: "No Badge Yet",
+        nextBadge: "Eco Seedling",
+        badges: []
+      };
     }
 
-    const current = nextBadgeIndex === 0 ? 0 : thresholds[nextBadgeIndex - 1].points
-    const next = thresholds[nextBadgeIndex].points
-    const progress = Math.min(100, Math.round(((user.points - current) / (next - current)) * 100))
-
+    // Define all level thresholds and badges (every 100 points up to level 10)
+    const badges = [
+      { level: 1, points: 100, name: "Eco Seedling", description: "Just started your green journey" },
+      { level: 2, points: 200, name: "Green Sprout", description: "Growing your environmental awareness" },
+      { level: 3, points: 300, name: "Earth Guardian", description: "Actively protecting our planet" },
+      { level: 4, points: 400, name: "Sustainability Scout", description: "Finding new ways to be eco-friendly" },
+      { level: 5, points: 500, name: "Waste Warrior", description: "Champion of reducing waste" },
+      { level: 6, points: 600, name: "Energy Conservator", description: "Expert at saving energy" },
+      { level: 7, points: 700, name: "Water Protector", description: "Dedicated to water conservation" },
+      { level: 8, points: 800, name: "Climate Defender", description: "Fighting against climate change" },
+      { level: 9, points: 900, name: "Eco Innovator", description: "Creating sustainable solutions" },
+      { level: 10, points: 1000, name: "Planet Champion", description: "Mastered sustainable living" },
+    ];
+    
+    // Determine current level and next level
+    const currentLevelIndex = Math.max(0, Math.floor(user.points / 100));
+    const currentLevel = Math.min(currentLevelIndex, 10);
+    const nextLevel = Math.min(currentLevel + 1, 10);
+    
+    // Get current and next badge
+    const currentBadge = currentLevel === 0 ? "No Badge Yet" : badges[currentLevel - 1].name;
+    const nextBadge = currentLevel >= 10 ? "Maximum Level Reached!" : badges[nextLevel - 1].name;
+    
+    // Calculate progress to next level
+    const current = currentLevel * 100;
+    const next = nextLevel * 100;
+    const progress = currentLevel >= 10 ? 100 : Math.min(100, Math.round(((user.points - current) / (next - current)) * 100));
+    
+    // Return all information
     return {
       current: user.points,
       next,
       progress,
-      nextBadge: thresholds[nextBadgeIndex].name
+      level: currentLevel,
+      nextLevel,
+      currentBadge,
+      nextBadge,
+      badges
+    }
+  }
+
+  // Helper function to get badge icon based on level
+  const getBadgeIcon = (level: number, isUnlocked: boolean) => {
+    const activeColor = isUnlocked ? "text-green-600" : "text-gray-400";
+    const size = "h-5 w-5";
+    
+    switch(level) {
+      case 1:
+        return (
+          <svg className={`${size} ${activeColor}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 6a2 2 0 0 0-2 2c0 2 2 4 2 4s2-2 2-4a2 2 0 0 0-2-2z" />
+          </svg>
+        ); // Seedling custom icon
+      case 2:
+        return <Leaf className={`${size} ${activeColor}`} />;
+      case 3:
+        return <Globe className={`${size} ${activeColor}`} />;
+      case 4:
+        return <Compass className={`${size} ${activeColor}`} />;
+      case 5:
+        return (
+          <svg className={`${size} ${activeColor}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+          </svg>
+        ); // Recycle bin custom icon
+      case 6:
+        return <Zap className={`${size} ${activeColor}`} />;
+      case 7:
+        return <Droplets className={`${size} ${activeColor}`} />;
+      case 8:
+        return <Shield className={`${size} ${activeColor}`} />;
+      case 9:
+        return (
+          <svg className={`${size} ${activeColor}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18L15 12L9 6" />
+            <circle cx="12" cy="12" r="9" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+          </svg>
+        ); // Innovation custom icon
+      case 10:
+        return (
+          <svg className={`${size} ${activeColor}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="7" />
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+          </svg>
+        ); // Champion medal custom icon
+      default:
+        return <Award className={`${size} ${activeColor}`} />;
     }
   }
 
@@ -125,7 +198,7 @@ export default function ProfilePage() {
     )
   }
 
-  const { progress, next, nextBadge } = getNextBadgeProgress()
+  const { progress, next, nextBadge, level, currentBadge, badges } = getBadgeAndLevelInfo();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -155,6 +228,7 @@ export default function ProfilePage() {
                 <h2 className="mt-4 text-xl font-bold text-green-800">{user?.name}</h2>
                 <p className="text-sm text-gray-500">{user?.location || "No location set"}</p>
                 
+                {/* Current Points Display */}
                 <div className="mt-6 w-full">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-500">Current Points</span>
@@ -163,48 +237,58 @@ export default function ProfilePage() {
                       {user?.points} Points
                     </Badge>
                   </div>
-                  <Progress value={progress} className="h-2" />
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                    <span>Level Progress</span>
-                    <span>{user?.points} / {next} for {nextBadge}</span>
+                  <div className="rounded-lg border bg-green-50 p-4 text-center">
+                    <div className="text-3xl font-bold text-green-800">{user?.points}</div>
+                    <div className="mt-1 text-sm text-green-600">Total Points Earned</div>
                   </div>
                 </div>
                 
+                {/* Badge Collection */}
                 <div className="mt-6 w-full">
-                  <h3 className="mb-2 text-sm font-medium text-gray-500">Badges Earned</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {user?.badges && user.badges.length > 0 ? (
-                      user.badges.map((badge, index) => (
-                        <div key={index} className="rounded-lg border p-2 text-center">
-                          <div className="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                            <Award className="h-4 w-4 text-green-600" />
-                          </div>
-                          <p className="text-xs font-medium">{badge.name}</p>
+                  <h3 className="mb-2 text-sm font-medium text-gray-500">Badge Collection</h3>
+                  <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pb-2">
+                    {getBadgeAndLevelInfo().badges.map((badge, index) => (
+                      <div 
+                        key={index} 
+                        className={`rounded-lg border p-2 text-center transition-all ${level >= badge.level ? 'border-green-500 bg-green-50' : 'opacity-50'}`}
+                      >
+                        <div className={`mx-auto mb-1 flex h-10 w-10 items-center justify-center rounded-full ${level >= badge.level ? 'bg-green-100' : 'bg-gray-100'}`}>
+                          {getBadgeIcon(badge.level, level >= badge.level)}
                         </div>
-                      ))
-                    ) : (
-                      <p className="col-span-2 text-center text-sm text-gray-500">
-                        Complete actions to earn badges!
-                      </p>
+                        <p className="text-xs font-medium">{badge.name}</p>
+                        <p className="text-xs text-gray-500">Level {badge.level}</p>
+                        {level >= badge.level && (
+                          <span className="inline-block mt-1 text-[10px] px-1 py-0.5 bg-green-100 text-green-800 rounded-full">Unlocked!</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Level Progress */}
+                <div className="mt-6 w-full">
+                  <h3 className="mb-2 text-sm font-medium text-gray-500">Level Progress</h3>
+                  <div className="rounded-lg border bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center text-sm font-medium">
+                        {getBadgeIcon(level, true)}
+                        <span className="ml-2">Level {level}</span>
+                      </span>
+                      <span className="text-sm font-medium">{currentBadge}</span>
+                    </div>
+                    <Progress value={progress} className="my-2 h-2" />
+                    {level < 10 && (
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{user?.points} points</span>
+                        <span>Next: {nextBadge} ({next} pts)</span>
+                      </div>
+                    )}
+                    {level >= 10 && (
+                      <div className="text-center text-xs text-green-600 font-medium">
+                        Maximum Level Achieved!
+                      </div>
                     )}
                   </div>
-                </div>
-                
-                <div className="mt-6 w-full space-y-2">
-                  <Button variant="outline" className="w-full justify-between">
-                    <span className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      Edit Profile
-                    </span>
-                    <ChevronRight size={16} />
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between">
-                    <span className="flex items-center">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Avatar
-                    </span>
-                    <ChevronRight size={16} />
-                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -275,20 +359,6 @@ export default function ProfilePage() {
                               </div>
                             </div>
                             <Badge>+5 points</Badge>
-                          </div>
-                        </div>
-                        <div className="rounded-lg border bg-white p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                                <Upload className="h-4 w-4 text-green-600" />
-                              </div>
-                              <div>
-                                <p className="font-medium">Share a sustainable tip</p>
-                                <p className="text-xs text-gray-500">Help others with your knowledge</p>
-                              </div>
-                            </div>
-                            <Badge>+10 points</Badge>
                           </div>
                         </div>
                         <div className="rounded-lg border bg-white p-3">
