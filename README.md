@@ -1,115 +1,141 @@
-# Green Lens 
+# Green Lens 🌿
 
-### Analyze & Visualize Environmental Data for Sustainable Decision Making
+### Your AI-Powered Guide to Sustainable Living
 
 <p align="center">
     <img src="./frontend/app/favicon.ico" alt="Green Lens Logo" width="200" height="200">
 </p>
 
-
 [![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-Latest-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Latest-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Latest-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Bun](https://img.shields.io/badge/Bun-Latest-F9F1E1?style=for-the-badge&logo=bun&logoColor=black)](https://bun.sh/)
 [![Vercel](https://img.shields.io/badge/Vercel-Latest-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![Azure](https://img.shields.io/badge/Azure-Latest-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/)
-[![Pydantic](https://img.shields.io/badge/Pydantic-Latest-E92063?style=for-the-badge&logo=pydantic&logoColor=white)](https://pydantic-docs.helpmanual.io/)
-[![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Axios](https://img.shields.io/badge/Axios-Latest-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Latest-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-Latest-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![shadcn/ui](https://img.shields.io/badge/shadcn/ui-Latest-000000?style=for-the-badge&logo=shadcnui&logoColor=white)](https://ui.shadcn.com/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-Latest-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-**Empowering organizations and individuals to understand their environmental footprint and take meaningful sustainable action.**
+
+## 🌐 Live Demo
+
+Experience Green Lens in action! Visit our live demo site to explore all features and start your sustainability journey today.
+
+**[green-lens-blond.vercel.app](https://green-lens-blond.vercel.app)**
+
+Try uploading an item, discover sustainable alternatives, or join an environmental quest to see how Green Lens can help you make more eco-friendly choices.
+
+
+**Making sustainable choices easier through AI-powered technology**
 
 ## 🚀 Overview
 
-Green Lens is an innovative tool designed to analyze and visualize environmental data, helping organizations and individuals make more sustainable decisions. By providing clear insights into ecological impacts, Green Lens empowers users to understand their environmental footprint and take meaningful action.
+Green Lens is an innovative sustainable living platform that uses AI to help users make environmentally conscious decisions. Whether you're trying to responsibly dispose of an item, find eco-friendly alternatives to everyday products, or contribute to environmental causes through gamified quests, Green Lens provides personalized guidance for reducing your ecological footprint.
 
 ## ✨ Key Features
 
-* **Real-time Data Analysis:** Process environmental metrics in real-time for immediate insights
-* **Interactive Visualizations:** Understand complex data through intuitive charts and graphs
-* **Customizable Reporting:** Generate tailored reports for different stakeholders and needs
-* **Multi-source Integration:** Connect with various data sources and IoT devices for comprehensive analysis
-* **Predictive Modeling:** Forecast environmental impacts using advanced machine learning techniques
+### 🔄 Get Rid of Something
+- **AI-Powered Analysis**: Upload a photo of any item, and our AI analyzes what it's made of
+- **3Rs Hierarchy**: Get personalized recommendations following the Reduce → Reuse → Recycle hierarchy
+- **Detailed Instructions**: Step-by-step guides on how to properly dispose of or repurpose items
+- **Recycling Locator**: Find nearby recycling centers that accept your specific items
 
-## 🛠️ Technology Stack
+### 🌱 Acquire Something Sustainably
+- **Eco-Friendly Alternatives**: Discover sustainable replacements for everyday products
+- **Purchasing Guidance**: Get information on where to buy sustainable products
+- **Environmental Benefits**: Learn about the positive impact of choosing greener alternatives
 
-* Python 3.8+
-* Pandas & NumPy for data processing
-* Matplotlib & Plotly for visualizations
-* TensorFlow for predictive models
-* Flask for web interface
+### 🏆 Environmental Quests
+- **Gamified Sustainability**: Complete eco-challenges to earn points and badges
+- **Progress Tracking**: Monitor your environmental impact with detailed metrics
+- **Badge System**: Earn badges for every 100 points up to level 10
+- **Community Leaderboard**: Compare your sustainable actions with others
 
-## 📋 Prerequisites
+### 🗺️ Recycling Map
+- **Interactive Directory**: Locate recycling centers, donation points, and hazardous waste facilities
+- **Material Filters**: Find locations that accept specific types of materials
+- **Detailed Information**: View hours, contact info, and accepted materials
 
-* Python 3.8 or higher
-* pip package manager
-* Git
+## 💡 Technologies
 
-## 📥 Installation
+| Category | Technology | Description |
+|----------|------------|-------------|
+| **Frontend** | Next.js | React framework for the web application |
+|  | TypeScript | Type-safe JavaScript for robust code |
+|  | TailwindCSS | Utility-first CSS framework for styling |
+|  | shadcn/ui | High-quality UI components |
+| **Backend** | FastAPI | Modern, fast API framework for Python |
+|  | MongoDB | NoSQL database for flexible data storage |
+|  | Google Gemini | AI model for image analysis and sustainable recommendations |
+|  | Pydantic | Data validation and settings management |
+| **Deployment** | Docker | Containerization for consistent environments |
+|  | Vercel | Frontend hosting and deployment |
+|  | Azure | Backend hosting and services |
 
+## 📊 Environmental Impact
+
+Green Lens users can visualize their personal environmental impact through:
+
+- **Carbon Saved**: Track CO₂ emissions prevented (kg)
+- **Water Saved**: Monitor water conservation (liters)  
+- **Waste Prevented**: Measure waste diverted from landfills (kg)
+- **Relatable Comparisons**: See your impact in understandable terms (e.g., "equivalent to not driving X miles")
+
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 16+ and npm/bun
+- Python 3.8+
+- MongoDB
+
+## 🚀 Getting Started
+
+> **Note:** The easiest way to experience Green Lens is through our [live demo](https://green-lens-blond.vercel.app). If you prefer to run it locally, follow the instructions below.
+
+### Prerequisites
+- Node.js 16+ and npm/bun
+- Python 3.8+
+- MongoDB
+
+### Installation
+
+#### Frontend
 ```bash
-# Clone the repository
-git clone https://github.com/username/green_lens.git
+# Navigate to frontend directory
+cd frontend
 
-# Navigate to the project directory
-cd green_lens
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+```
+
+#### Backend
+```bash
+# Navigate to backend directory
+cd backend
+
+# Create and activate virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-python main.py
+# Start the backend server
+python -m uvicorn main:app --reload
 ```
 
-## 📖 Usage Guide
+Once both servers are running, access the application at `http://localhost:3000`
 
-```python
-import green_lens
+## 👥 Contributors
 
-# Initialize the analyzer
-analyzer = green_lens.Analyzer()
+- [Kushal Prajapati](https://github.com/KushalPraja/)
+- [Krish Prajapati](https://github.com/KrishPraj/)
 
-# Load your environmental data
-analyzer.load_data("path/to/data.csv")
+## 🙏 Acknowledgements
 
-# Generate insights
-results = analyzer.generate_insights()
-
-# Visualize the results
-analyzer.visualize(results)
-```
-
-## 📚 Documentation
-
-For detailed documentation, visit our [wiki](https://github.com/username/green_lens/wiki).
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact & Support
-
-Project Link: [https://github.com/username/green_lens](https://github.com/username/green_lens)
-
-For support, please:
-- Open an issue on GitHub
-- Reach out to the project maintainers
-
-## 🙏 Acknowledgments
-
-- Thanks to all contributors who have helped shape Green Lens
-- Special thanks to the open-source community
-- Built with passion for a more sustainable future
+- [Google Gemini](https://ai.google.dev/) for providing the AI capabilities
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [The sustainable development community](https://sdgs.un.org/goals) for inspiration
